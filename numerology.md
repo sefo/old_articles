@@ -9,10 +9,10 @@ Wayback machine: https://web.archive.org/web/20050222145608/http://www.osix.net/
 
 ##  Introduction:
 
-I found an interesting shareware on \[Download.com\] called optName.
+I found an interesting shareware on [Download.com] called optName.
 One of its features is to calculate a number from any name you enter.
 
-If you look at \[optName's site\], you will understand that from each name, you can calculate a number from 1 to 9 or two additional (special) numbers 11 and 22. Each number has its unique definition. (1 is a masculine number...etc.)
+If you look at [optName's site], you will understand that from each name, you can calculate a number from 1 to 9 or two additional (special) numbers 11 and 22. Each number has its unique definition. (1 is a masculine number...etc.)
 
 ## Reversing the process
 
@@ -36,12 +36,12 @@ There we find directly where the program displays the results of the calculation
 Following is a sample of the code when your number is 9.
 
 ```
-0043B5F7 MOV EAX,DWORD PTR SS:\[EBP-4\] ;Case 9 of switch 0043B49E
-0043B5FA MOV EAX,DWORD PTR DS:\[EAX+218\]
-0043B600 MOV EAX,DWORD PTR DS:\[EAX+130\]
+0043B5F7 MOV EAX,DWORD PTR SS:[EBP-4] ;Case 9 of switch 0043B49E
+0043B5FA MOV EAX,DWORD PTR DS:[EAX+218]
+0043B600 MOV EAX,DWORD PTR DS:[EAX+130]
 0043B606 MOV EDX,optName.0043C5FC ;ASCII "This number is..."
-0043B60B MOV ECX,DWORD PTR DS:\[EAX\]
-0043B60D CALL DWORD PTR DS:\[ECX+2C\]
+0043B60B MOV ECX,DWORD PTR DS:[EAX]
+0043B60D CALL DWORD PTR DS:[ECX+2C]
 0043B610 JMP SHORT optName.0043B666
 ```
 
@@ -58,12 +58,12 @@ The shareware automatically puts the first letter upper case and the rest lower 
 ```
 0043B2DE MOV EAX,optName.00490D75 ;EAX='Sefo'
 0043B2E3 /XOR ECX,ECX ;initialize ECX (0)
-0043B2E5 |MOV CL,BYTE PTR DS:\[EAX\] ;CL='S' (53)
+0043B2E5 |MOV CL,BYTE PTR DS:[EAX] ;CL='S' (53)
 0043B2E7 |ADD ECX,-41 ;Switch(cases 41-7A)
 0043B2EA |CMP ECX,39 ;is it a letter?
 0043B2ED |JA optName.0043B38B ;jump if invalid
-0043B2F3 |MOV CL,BYTE PTR DS:\[ECX+43B300\];index of the current letter of the name
-0043B2F9 |JMP DWORD PTR DS:\[ECX\*4+43B33A\];jump if valid letter
+0043B2F3 |MOV CL,BYTE PTR DS:[ECX+43B300];index of the current letter of the name
+0043B2F9 |JMP DWORD PTR DS:[ECX\*4+43B33A];jump if valid letter
 ```
 
 It is the begining of the calculation process.
@@ -139,7 +139,7 @@ In this case we will go to `0043B395`.
 0043B3A1 |MOV ECX,EAX ;ECX=1
 0043B3A3 |MOV EAX,ECX ;EAX=1
 0043B3A5 |ADD EAX,EAX ;EAX=2
-0043B3A7 |LEA EAX,DWORD PTR DS:\[EAX+EAX\*4\] ;EAX=0A
+0043B3A7 |LEA EAX,DWORD PTR DS:[EAX+EAX\*4] ;EAX=0A
 0043B3AA |MOV EDX,EBX ;EDX=12
 0043B3AC |SUB DL,AL ;EDX=12-12=0
 0043B3AE |PUSH EDX

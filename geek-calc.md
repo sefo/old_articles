@@ -22,22 +22,22 @@ __Where to start?__
 The first thing to do is to find where the program takes the value of each button pressed. For this, we will bet on the API `GetDlgItem`.
 
 To find where is called this API, open calc.exe in OllyDbg. (Make sure to make a bakup of calc.exe before any manipulation)
-Now you can press \[CTRL\]+N to find what API are used. In the list that appears find GetDlgItem, right-click on it and choose:
+Now you can press [CTRL]+N to find what API are used. In the list that appears find GetDlgItem, right-click on it and choose:
 "Set Breakpoint on Every Reference".
 
-By pressing \[ALT\]+B you can find the list of breakpoints you set and see that GetDlgItem is largely used.
-If you run calc.exe now (F9) it will immediately break on one of our breakpoints. So before running the exe, open the list of breakpoints (\[ALT\]+B), right-click on any line and choose "Disable all".
+By pressing [ALT]+B you can find the list of breakpoints you set and see that GetDlgItem is largely used.
+If you run calc.exe now (F9) it will immediately break on one of our breakpoints. So before running the exe, open the list of breakpoints ([ALT]+B), right-click on any line and choose "Disable all".
 Now run by using F9, in the breakpoints list, right-click and choose "enable all" and finally in the calculator press for example the digit "6" to break here:
 
 ```
 01002604 PUSH / ESI ;begining of the function that contains GetDlgItem
 01002605 PUSH | EDI
 01002606 PUSH | 193
-0100260B PUSH | DWORD PTR SS:\[ESP+10\]
-0100260F CALL | DWORD PTR DS:\[<&USER32.GetDlgItem>\] ; breakpoint here
+0100260B PUSH | DWORD PTR SS:[ESP+10]
+0100260F CALL | DWORD PTR DS:[<&USER32.GetDlgItem>] ; breakpoint here
 ```
 
-Now that we know which GetDlgItem is called, note the address 0100260F somewhere and delete all breakpoints (\[ALT\]+B and press delete) to keep our list clean.
+Now that we know which GetDlgItem is called, note the address 0100260F somewhere and delete all breakpoints ([ALT]+B and press delete) to keep our list clean.
 We could start here but when we take a look at EAX in the registers window (top-right corner) we see:
 
 `0006F824 "unicode 6, "`
@@ -57,15 +57,15 @@ Now Set a breakpoint on every command. If you deleted the previous breakpoints, 
 01004A5F CALL
 ```
 
-Disable (but don't delete) these breakpoints, restart the program (\[CTRL\]+F2) and run (F9). Enable all breakpoints and finally press the digit "6" one more time to break here:
+Disable (but don't delete) these breakpoints, restart the program ([CTRL]+F2) and run (F9). Enable all breakpoints and finally press the digit "6" one more time to break here:
 
 ```
 010048EF PUSH g5.01001364 ; StringToAdd = " "
 010048F4 PUSH EAX
-010048F5 CALL DWORD PTR DS:\[<&KERNEL32.lstrcatW>\]
-010048FB LEA EAX,DWORD PTR SS:\[EBP-200\]
+010048F5 CALL DWORD PTR DS:[<&KERNEL32.lstrcatW>]
+010048FB LEA EAX,DWORD PTR SS:[EBP-200]
 01004901 PUSH EAX
-01004902 PUSH DWORD PTR DS:\[1014D6C\]
+01004902 PUSH DWORD PTR DS:[1014D6C]
 01004908 CALL g5.01002604
 ```
 
@@ -74,8 +74,8 @@ We also found where the space character is concatenated.
 Now go up in the listing to find:
 
 ```
-01004835 PUSH DWORD PTR DS:\[1014DB0\] ; String = "6,"
-0100483B CALL DWORD PTR DS:\[<&KERNEL32.lstrlenW>\]
+01004835 PUSH DWORD PTR DS:[1014DB0] ; String = "6,"
+0100483B CALL DWORD PTR DS:[<&KERNEL32.lstrlenW>]
 ```
 
 Here the space character has not been concatenated yet and we could plug our code here.
@@ -102,7 +102,7 @@ We won't choose this location for our patch because it is in the middle of a cal
 ```
 _into the call_:
 0100233E PUSH EAX ; /String2 = "6"
-0100233F LEA EAX,DWORD PTR SS:\[EBP+EDI\*2-108\]
+0100233F LEA EAX,DWORD PTR SS:[EBP+EDI\*2-108]
 01002346 PUSH EAX
 01002347 CALL EBX ; lstrcpyW
 ```
@@ -113,9 +113,9 @@ it copies the string in another variable here:
 ```
 0100486B PUSH 0FE
 01004870 PUSH ECX
-01004871 LEA EAX,DWORD PTR SS:\[EBP-200\]
+01004871 LEA EAX,DWORD PTR SS:[EBP-200]
 01004877 PUSH EAX
-01004878 CALL DWORD PTR DS:\[<&KERNEL32.lstrcpynW>>
+01004878 CALL DWORD PTR DS:[<&KERNEL32.lstrcpynW>]
 ```
 
 (6, is stored in 0006F784)
@@ -219,10 +219,10 @@ Here it is:
 010136D7 CMP ESI,EDI ;is the loop finished?
 010136D9 JE SHORT 010136FA ;if yes than password = OK
 010136DB XOR EAX,EAX
-010136DD SUB BYTE PTR DS:\[ECX+ESI\],5 ;SUB 5 to each char
-010136E1 XOR BYTE PTR DS:\[ECX+ESI\],9 ;XOR it with 9
-010136E5 MOV AL,BYTE PTR DS:\[ECX+ESI\]
-010136E8 CMP BYTE PTR DS:\[EBX+ESI\],AL ;char = char of checksum?
+010136DD SUB BYTE PTR DS:[ECX+ESI],5 ;SUB 5 to each char
+010136E1 XOR BYTE PTR DS:[ECX+ESI],9 ;XOR it with 9
+010136E5 MOV AL,BYTE PTR DS:[ECX+ESI]
+010136E8 CMP BYTE PTR DS:[EBX+ESI],AL ;char = char of checksum?
 010136EB JNZ SHORT 010136F2 ; if no ExitProcess
 010136ED ADD ESI,2 ;loop 2 by 2 because of the '.'
 010136F0 JMP SHORT 010136D7 ;next char
@@ -272,10 +272,10 @@ mov esi,0
 
 .WHILE esi < edi
   xor eax,eax
-  sub byte ptr\[ecx+esi\],5h
-  xor byte ptr\[ecx+esi\],9h
-  mov al,\[ecx+esi\]
-    .IF byte ptr\[ebx+esi\] != al
+  sub byte ptr[ecx+esi],5h
+  xor byte ptr[ecx+esi],9h
+  mov al,[ecx+esi]
+    .IF byte ptr[ebx+esi] != al
       push 0
       push offset MsgNO
       push offset MsgNO
